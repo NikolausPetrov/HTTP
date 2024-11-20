@@ -1,14 +1,23 @@
 package ru.netology;
 
-import java.io.*;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class Server {
     private final List<String> validPaths = List.of(
@@ -46,12 +55,9 @@ public class Server {
                 return;
             }
 
-            String[] parts = requestLine.split(" ");
-            if (parts.length != 3) {
-                return;
-            }
+            Request request = new Request(requestLine);
+            String path = request.getPath();
 
-            String path = parts[1];
             if (!validPaths.contains(path)) {
                 out.write(("HTTP/1.1 404 Not Found\r\n" +
                         "Content-Length: 0\r\n" +
